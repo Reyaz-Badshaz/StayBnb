@@ -25,6 +25,7 @@ router.get('/:id', bookingController.getBooking);
 router.post('/:id/create-order', bookingController.createPaymentOrder);
 router.post('/:id/verify-payment', bookingController.verifyPayment);
 router.put('/:id/cancel', bookingController.cancelBooking);
+router.put('/:id/checkout', bookingController.checkoutBooking);
 
 // Host routes
 router.put('/:id/confirm', requireHost, bookingController.hostConfirmBooking);

@@ -517,6 +517,34 @@ class BookingService {
   }
 
   /**
+   * Guest checkout booking and mark trip as completed
+   */
+  async checkoutBooking(bookingId, guestId) {
+    const booking = await Booking.findById(bookingId);
+
+    if (!booking) {
+      throw AppError.notFound('Booking not found');
+    }
+
+    if (booking.guest.toString() !== guestId.toString()) {
+      throw AppError.forbidden('Only the guest can check out this booking');
+    }
+
+    if (booking.status !== 'confirmed') {
+      throw AppError.badRequest('Only confirmed bookings can be checked out');
+    }
+
+    if (new Date() < new Date(booking.checkOut)) {
+      throw AppError.badRequest('Checkout is available only on or after the check-out date');
+    }
+
+    booking.status = 'completed';
+    await booking.save();
+
+    return booking;
+  }
+
+  /**
    * Get host's upcoming bookings
    */
   async getHostUpcomingBookings(hostId, page = 1, limit = 10) {

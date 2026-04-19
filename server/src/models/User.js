@@ -39,6 +39,17 @@ const userSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    aadhaarNumber: {
+      type: String,
+      trim: true,
+      select: false,
+    },
+    panCardNumber: {
+      type: String,
+      trim: true,
+      uppercase: true,
+      select: false,
+    },
     dateOfBirth: {
       type: Date,
       required: [true, 'Date of birth is required'],

@@ -6,6 +6,7 @@ import geolocationService from './geolocationService';
 import oauthService from './oauthService';
 import razorpayService from './razorpayService';
 import hostService from './hostService';
+import reviewService from './reviewService';
 
 export {
   api,
@@ -16,4 +17,5 @@ export {
   oauthService,
   razorpayService,
   hostService,
+  reviewService,
 };

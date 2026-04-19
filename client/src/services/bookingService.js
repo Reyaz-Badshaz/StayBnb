@@ -35,6 +35,12 @@ export const bookingService = {
     return response.data;
   },
 
+  // Complete checkout (guest)
+  checkoutBooking: async (id) => {
+    const response = await api.put(`/bookings/${id}/checkout`);
+    return response.data;
+  },
+
   // Get host's bookings (received)
   getHostBookings: async (params = {}) => {
     const response = await api.get('/bookings/host', { params });

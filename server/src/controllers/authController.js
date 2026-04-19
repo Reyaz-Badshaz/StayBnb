@@ -15,7 +15,16 @@ const cookieOptions = {
  * @access  Public
  */
 const register = catchAsync(async (req, res) => {
-  const { email, password, firstName, lastName, dateOfBirth } = req.body;
+  const {
+    email,
+    password,
+    firstName,
+    lastName,
+    dateOfBirth,
+    phone,
+    aadhaarNumber,
+    panCardNumber,
+  } = req.body;
 
   const result = await authService.register({
     email,
@@ -23,6 +32,9 @@ const register = catchAsync(async (req, res) => {
     firstName,
     lastName,
     dateOfBirth,
+    phone,
+    aadhaarNumber,
+    panCardNumber,
     userAgent: req.get('User-Agent'),
     ip: req.ip,
   });

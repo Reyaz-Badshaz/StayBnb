@@ -37,6 +37,21 @@ const registerValidation = [
     .isLength({ min: 2, max: 50 })
     .withMessage('Last name must be between 2 and 50 characters')
     .escape(),
+  body('phone')
+    .trim()
+    .customSanitizer((value) => value.replace(/\D/g, ''))
+    .matches(/^[6-9]\d{9}$/)
+    .withMessage('Please provide a valid 10-digit Indian phone number'),
+  body('aadhaarNumber')
+    .trim()
+    .customSanitizer((value) => value.replace(/\D/g, ''))
+    .matches(/^\d{12}$/)
+    .withMessage('Please provide a valid 12-digit Aadhaar number'),
+  body('panCardNumber')
+    .trim()
+    .toUpperCase()
+    .matches(/^[A-Z]{5}[0-9]{4}[A-Z]$/)
+    .withMessage('Please provide a valid PAN card number'),
   body('dateOfBirth')
     .isISO8601()
     .withMessage('Please provide a valid date of birth')

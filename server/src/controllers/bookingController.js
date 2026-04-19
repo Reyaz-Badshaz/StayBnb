@@ -130,6 +130,17 @@ const hostDeclineBooking = catchAsync(async (req, res) => {
 });
 
 /**
+ * @desc    Guest check-out and complete booking
+ * @route   PUT /api/v1/bookings/:id/checkout
+ * @access  Private (Guest)
+ */
+const checkoutBooking = catchAsync(async (req, res) => {
+  const booking = await bookingService.checkoutBooking(req.params.id, req.user._id);
+
+  ApiResponse.success(res, booking, 'Checkout successful. Thanks for staying with us!');
+});
+
+/**
  * @desc    Get booked dates for a property
  * @route   GET /api/v1/bookings/property/:propertyId/booked-dates
  * @access  Public
@@ -210,6 +221,7 @@ module.exports = {
   cancelBooking,
   hostConfirmBooking,
   hostDeclineBooking,
+  checkoutBooking,
   getBookedDates,
   razorpayWebhook,
 };

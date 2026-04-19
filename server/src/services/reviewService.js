@@ -1,11 +1,20 @@
 const { Review, Booking, Property, User } = require('../models');
+const cloudinaryService = require('./cloudinaryService');
 const AppError = require('../utils/AppError');
 
 /**
  * Create a review for a completed booking
  */
 const createReview = async (userId, data) => {
-  const { bookingId, ratings, comment, type } = data;
+  const { bookingId, ratings, comment, type, images = [] } = data;
+
+  if (!Array.isArray(images)) {
+    throw AppError.badRequest('Review images must be an array');
+  }
+
+  if (images.length > 5) {
+    throw AppError.badRequest('You can upload up to 5 images per feedback');
+  }
 
   // Get the booking
   const booking = await Booking.findById(bookingId)
@@ -60,6 +69,27 @@ const createReview = async (userId, data) => {
     throw AppError.badRequest('You have already reviewed this booking');
   }
 
+  let uploadedImages = [];
+  if (images.length > 0) {
+    try {
+      const uploads = await cloudinaryService.uploadImages(images, {
+        folder: `staybnb/reviews/${bookingId}`,
+        transformation: [
+          { width: 1600, height: 1200, crop: 'limit' },
+          { quality: 'auto:good' },
+          { format: 'auto' },
+        ],
+      });
+
+      uploadedImages = uploads.map((img) => ({
+        url: img.url,
+        publicId: img.publicId,
+      }));
+    } catch (error) {
+      throw AppError.badRequest('Failed to upload review images');
+    }
+  }
+
   // Create the review
   const review = await Review.create({
     booking: bookingId,
@@ -69,6 +99,7 @@ const createReview = async (userId, data) => {
     type,
     ratings,
     comment,
+    images: uploadedImages,
   });
 
   // Populate the review

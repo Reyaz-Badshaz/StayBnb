@@ -79,6 +79,16 @@ const reviewSchema = new Schema(
       minlength: [10, 'Review must be at least 10 characters'],
       maxlength: [5000, 'Review cannot exceed 5000 characters'],
     },
+    images: [
+      {
+        url: {
+          type: String,
+          required: true,
+        },
+        publicId: String,
+        caption: String,
+      },
+    ],
 
     // Host response
     response: {

@@ -57,7 +57,7 @@ const RegisterPage = () => {
       } else {
         toast.error(result.payload || 'Google sign-up failed');
       }
-    } catch (err) {
+    } catch {
       toast.error('Google sign-up failed');
     } finally {
       setSocialLoading(null);
@@ -190,6 +190,81 @@ const RegisterPage = () => {
               />
               {errors.email && (
                 <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+              )}
+            </div>
+
+            {/* Phone */}
+            <div>
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                Phone number
+              </label>
+              <input
+                id="phone"
+                type="tel"
+                autoComplete="tel"
+                {...register('phone', {
+                  required: 'Phone number is required',
+                  pattern: {
+                    value: /^[6-9]\d{9}$/,
+                    message: 'Enter a valid 10-digit Indian phone number',
+                  },
+                })}
+                className="input-field"
+                placeholder="9876543210"
+              />
+              {errors.phone && (
+                <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>
+              )}
+            </div>
+
+            {/* Aadhaar Number */}
+            <div>
+              <label htmlFor="aadhaarNumber" className="block text-sm font-medium text-gray-700 mb-1">
+                Aadhaar number
+              </label>
+              <input
+                id="aadhaarNumber"
+                type="text"
+                inputMode="numeric"
+                maxLength={12}
+                {...register('aadhaarNumber', {
+                  required: 'Aadhaar number is required',
+                  pattern: {
+                    value: /^\d{12}$/,
+                    message: 'Aadhaar number must be 12 digits',
+                  },
+                })}
+                className="input-field"
+                placeholder="123412341234"
+              />
+              {errors.aadhaarNumber && (
+                <p className="mt-1 text-sm text-red-600">{errors.aadhaarNumber.message}</p>
+              )}
+            </div>
+
+            {/* PAN Card Number */}
+            <div>
+              <label htmlFor="panCardNumber" className="block text-sm font-medium text-gray-700 mb-1">
+                PAN card number
+              </label>
+              <input
+                id="panCardNumber"
+                type="text"
+                autoCapitalize="characters"
+                maxLength={10}
+                {...register('panCardNumber', {
+                  required: 'PAN card number is required',
+                  setValueAs: (value) => (value || '').toUpperCase(),
+                  pattern: {
+                    value: /^[A-Z]{5}[0-9]{4}[A-Z]$/,
+                    message: 'Enter a valid PAN card number',
+                  },
+                })}
+                className="input-field"
+                placeholder="ABCDE1234F"
+              />
+              {errors.panCardNumber && (
+                <p className="mt-1 text-sm text-red-600">{errors.panCardNumber.message}</p>
               )}
             </div>
 

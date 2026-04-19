@@ -3,6 +3,25 @@ const app = require('../src/app');
 const db = require('./setup');
 const { User } = require('../src/models');
 
+const registerPayload = {
+  firstName: 'John',
+  lastName: 'Doe',
+  email: 'john@example.com',
+  password: 'Password123!',
+  dateOfBirth: '1995-01-20',
+  phone: '9876543210',
+  aadhaarNumber: '123412341234',
+  panCardNumber: 'ABCDE1234F',
+};
+
+const userFixture = {
+  firstName: 'John',
+  lastName: 'Doe',
+  email: 'john@example.com',
+  password: 'Password123!',
+  dateOfBirth: new Date('1995-01-20'),
+};
+
 beforeAll(async () => {
   await db.connect();
 });
@@ -20,13 +39,7 @@ describe('Auth Endpoints', () => {
     it('should register a new user', async () => {
       const res = await request(app)
         .post('/api/v1/auth/register')
-        .send({
-          firstName: 'John',
-          lastName: 'Doe',
-          email: 'john@example.com',
-          password: 'Password123!',
-          confirmPassword: 'Password123!',
-        });
+        .send(registerPayload);
 
       expect(res.statusCode).toBe(201);
       expect(res.body.success).toBe(true);
@@ -38,11 +51,8 @@ describe('Auth Endpoints', () => {
       const res = await request(app)
         .post('/api/v1/auth/register')
         .send({
-          firstName: 'John',
-          lastName: 'Doe',
+          ...registerPayload,
           email: 'invalid-email',
-          password: 'Password123!',
-          confirmPassword: 'Password123!',
         });
 
       expect(res.statusCode).toBe(400);
@@ -53,26 +63,21 @@ describe('Auth Endpoints', () => {
       const res = await request(app)
         .post('/api/v1/auth/register')
         .send({
-          firstName: 'John',
-          lastName: 'Doe',
-          email: 'john@example.com',
+          ...registerPayload,
           password: '123',
-          confirmPassword: '123',
         });
 
       expect(res.statusCode).toBe(400);
       expect(res.body.success).toBe(false);
     });
 
-    it('should fail with mismatched passwords', async () => {
+    it('should fail with underage user', async () => {
       const res = await request(app)
         .post('/api/v1/auth/register')
         .send({
-          firstName: 'John',
-          lastName: 'Doe',
-          email: 'john@example.com',
-          password: 'Password123!',
-          confirmPassword: 'DifferentPassword!',
+          ...registerPayload,
+          email: 'underage@example.com',
+          dateOfBirth: '2012-01-01',
         });
 
       expect(res.statusCode).toBe(400);
@@ -86,32 +91,22 @@ describe('Auth Endpoints', () => {
         lastName: 'Doe',
         email: 'john@example.com',
         password: 'Password123!',
+        dateOfBirth: new Date('1993-01-01'),
       });
 
       // Try to register with same email
       const res = await request(app)
         .post('/api/v1/auth/register')
-        .send({
-          firstName: 'John',
-          lastName: 'Doe',
-          email: 'john@example.com',
-          password: 'Password123!',
-          confirmPassword: 'Password123!',
-        });
+        .send(registerPayload);
 
-      expect(res.statusCode).toBe(400);
+      expect(res.statusCode).toBe(409);
       expect(res.body.success).toBe(false);
     });
   });
 
   describe('POST /api/v1/auth/login', () => {
     beforeEach(async () => {
-      await User.create({
-        firstName: 'John',
-        lastName: 'Doe',
-        email: 'john@example.com',
-        password: 'Password123!',
-      });
+      await User.create(userFixture);
     });
 
     it('should login with valid credentials', async () => {
@@ -155,12 +150,7 @@ describe('Auth Endpoints', () => {
   describe('POST /api/v1/auth/logout', () => {
     it('should logout successfully', async () => {
       // First login
-      const user = await User.create({
-        firstName: 'John',
-        lastName: 'Doe',
-        email: 'john@example.com',
-        password: 'Password123!',
-      });
+      await User.create(userFixture);
 
       const loginRes = await request(app)
         .post('/api/v1/auth/login')
@@ -183,12 +173,7 @@ describe('Auth Endpoints', () => {
 
   describe('GET /api/v1/users/me', () => {
     it('should get current user profile', async () => {
-      const user = await User.create({
-        firstName: 'John',
-        lastName: 'Doe',
-        email: 'john@example.com',
-        password: 'Password123!',
-      });
+      await User.create(userFixture);
 
       const loginRes = await request(app)
         .post('/api/v1/auth/login')

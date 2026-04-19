@@ -42,9 +42,30 @@ class AuthService {
    */
   async register(userData) {
     // Check if user already exists
-    const existingUser = await User.findOne({ email: userData.email.toLowerCase() });
+    const normalizedEmail = userData.email.toLowerCase();
+    const normalizedPanCard = userData.panCardNumber.toUpperCase();
+    const existingUser = await User.findOne({
+      $or: [
+        { email: normalizedEmail },
+        { phone: userData.phone },
+        { aadhaarNumber: userData.aadhaarNumber },
+        { panCardNumber: normalizedPanCard },
+      ],
+    }).select('email phone +aadhaarNumber +panCardNumber');
+
     if (existingUser) {
-      throw AppError.conflict('Email already registered');
+      if (existingUser.email === normalizedEmail) {
+        throw AppError.conflict('Email already registered');
+      }
+      if (existingUser.phone === userData.phone) {
+        throw AppError.conflict('Phone number already registered');
+      }
+      if (existingUser.aadhaarNumber === userData.aadhaarNumber) {
+        throw AppError.conflict('Aadhaar number already registered');
+      }
+      if (existingUser.panCardNumber === normalizedPanCard) {
+        throw AppError.conflict('PAN card number already registered');
+      }
     }
 
     // Validate age (must be 18+)
@@ -61,10 +82,13 @@ class AuthService {
 
     // Create user
     const user = await User.create({
-      email: userData.email.toLowerCase(),
+      email: normalizedEmail,
       password: userData.password,
       firstName: userData.firstName,
       lastName: userData.lastName,
+      phone: userData.phone,
+      aadhaarNumber: userData.aadhaarNumber,
+      panCardNumber: normalizedPanCard,
       dateOfBirth: userData.dateOfBirth,
     });
 
@@ -82,6 +106,8 @@ class AuthService {
     // Return user without password
     const userObject = user.toObject();
     delete userObject.password;
+    delete userObject.aadhaarNumber;
+    delete userObject.panCardNumber;
 
     return {
       user: userObject,
