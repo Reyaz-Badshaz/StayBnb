@@ -3,7 +3,9 @@ import { io } from 'socket.io-client';
 const API_URL = import.meta.env.VITE_API_URL || '';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 const normalizedFromApi = API_URL.replace(/\/api\/v1\/?$/, '');
+const isVercelHost = typeof window !== 'undefined' && window.location.hostname.endsWith('.vercel.app');
 const SOCKET_URL =
+  (isVercelHost ? window.location.origin : '') ||
   import.meta.env.VITE_SOCKET_URL ||
   API_BASE_URL ||
   normalizedFromApi ||
