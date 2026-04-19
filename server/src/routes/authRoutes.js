@@ -4,6 +4,7 @@ const { protect } = require('../middleware');
 const { passport } = require('../config/passport');
 const config = require('../config');
 const {
+  requestSignupOtpValidation,
   registerValidation,
   loginValidation,
   forgotPasswordValidation,
@@ -14,6 +15,7 @@ const {
 const router = express.Router();
 
 // Public routes
+router.post('/request-signup-otp', requestSignupOtpValidation, authController.requestSignupOtp);
 router.post('/register', registerValidation, authController.register);
 router.post('/login', loginValidation, authController.login);
 router.post('/refresh-token', authController.refreshToken);

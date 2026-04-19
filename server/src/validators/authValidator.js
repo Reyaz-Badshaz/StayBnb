@@ -52,6 +52,10 @@ const registerValidation = [
     .toUpperCase()
     .matches(/^[A-Z]{5}[0-9]{4}[A-Z]$/)
     .withMessage('Please provide a valid PAN card number'),
+  body('signupOtp')
+    .trim()
+    .matches(/^\d{6}$/)
+    .withMessage('Please provide a valid 6-digit OTP'),
   body('dateOfBirth')
     .isISO8601()
     .withMessage('Please provide a valid date of birth')
@@ -68,6 +72,26 @@ const registerValidation = [
       }
       return true;
     }),
+  validate,
+];
+
+const requestSignupOtpValidation = [
+  body('email')
+    .trim()
+    .isEmail()
+    .withMessage('Please provide a valid email')
+    .normalizeEmail(),
+  body('phone')
+    .trim()
+    .customSanitizer((value) => value.replace(/\D/g, ''))
+    .matches(/^[6-9]\d{9}$/)
+    .withMessage('Please provide a valid 10-digit Indian phone number'),
+  body('firstName')
+    .optional()
+    .trim()
+    .isLength({ min: 2, max: 50 })
+    .withMessage('First name must be between 2 and 50 characters')
+    .escape(),
   validate,
 ];
 
@@ -165,6 +189,7 @@ const updateProfileValidation = [
 
 module.exports = {
   validate,
+  requestSignupOtpValidation,
   registerValidation,
   loginValidation,
   forgotPasswordValidation,

@@ -24,6 +24,7 @@ const register = catchAsync(async (req, res) => {
     phone,
     aadhaarNumber,
     panCardNumber,
+    signupOtp,
   } = req.body;
 
   const result = await authService.register({
@@ -35,6 +36,7 @@ const register = catchAsync(async (req, res) => {
     phone,
     aadhaarNumber,
     panCardNumber,
+    signupOtp,
     userAgent: req.get('User-Agent'),
     ip: req.ip,
   });
@@ -52,6 +54,19 @@ const register = catchAsync(async (req, res) => {
     user: result.user,
     accessToken: result.accessToken,
   }, 'Registration successful. Please verify your email.');
+});
+
+/**
+ * @desc    Request sign-up OTP
+ * @route   POST /api/v1/auth/request-signup-otp
+ * @access  Public
+ */
+const requestSignupOtp = catchAsync(async (req, res) => {
+  const { email, phone, firstName } = req.body;
+
+  const result = await authService.requestSignupOtp({ email, phone, firstName });
+
+  ApiResponse.success(res, result, 'OTP sent successfully');
 });
 
 /**
@@ -341,6 +356,7 @@ const appleCallback = catchAsync(async (req, res) => {
 });
 
 module.exports = {
+  requestSignupOtp,
   register,
   login,
   logout,

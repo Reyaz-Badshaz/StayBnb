@@ -1,10 +1,70 @@
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const config = require('../config');
-const { User } = require('../models');
+const { User, SignupOtp } = require('../models');
 const { AppError } = require('../utils');
+const emailService = require('./emailService');
 
 class AuthService {
+  generateSignupOtp() {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  }
+
+  hashOtp(otp) {
+    return crypto.createHash('sha256').update(otp).digest('hex');
+  }
+
+  async requestSignupOtp({ email, phone, firstName }) {
+    const normalizedEmail = email.toLowerCase();
+    const normalizedPhone = phone.replace(/\D/g, '');
+
+    const existingUser = await User.findOne({
+      $or: [{ email: normalizedEmail }, { phone: normalizedPhone }],
+    }).select('email phone');
+
+    if (existingUser) {
+      if (existingUser.email === normalizedEmail) {
+        throw AppError.conflict('Email already registered');
+      }
+      if (existingUser.phone === normalizedPhone) {
+        throw AppError.conflict('Phone number already registered');
+      }
+    }
+
+    const otp = this.generateSignupOtp();
+    const otpHash = this.hashOtp(otp);
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+    await SignupOtp.findOneAndUpdate(
+      { email: normalizedEmail, phone: normalizedPhone },
+      {
+        email: normalizedEmail,
+        phone: normalizedPhone,
+        otpHash,
+        expiresAt,
+        attempts: 0,
+        lastSentAt: new Date(),
+      },
+      { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
+    );
+
+    const emailResult = await emailService.sendSignupOtpEmail(
+      normalizedEmail,
+      firstName,
+      otp,
+      10
+    );
+
+    if (!emailResult?.success && config.nodeEnv === 'production') {
+      throw AppError.badRequest('Failed to send OTP. Please try again.');
+    }
+
+    return {
+      expiresInSeconds: 10 * 60,
+      ...(config.nodeEnv !== 'production' ? { otp } : {}),
+    };
+  }
+
   /**
    * Generate JWT access token
    */
@@ -80,17 +140,45 @@ class AuthService {
       throw AppError.badRequest('You must be at least 18 years old to register');
     }
 
+    const normalizedPhone = userData.phone.replace(/\D/g, '');
+    const signupOtp = await SignupOtp.findOne({
+      email: normalizedEmail,
+      phone: normalizedPhone,
+    }).select('+otpHash');
+
+    if (!signupOtp) {
+      throw AppError.badRequest('Please request OTP before signing up');
+    }
+
+    if (new Date() > signupOtp.expiresAt) {
+      await SignupOtp.deleteOne({ _id: signupOtp._id });
+      throw AppError.badRequest('OTP expired. Please request a new OTP.');
+    }
+
+    if (signupOtp.attempts >= 5) {
+      throw AppError.badRequest('Too many invalid OTP attempts. Please request a new OTP.');
+    }
+
+    const isOtpValid = this.hashOtp(userData.signupOtp) === signupOtp.otpHash;
+    if (!isOtpValid) {
+      signupOtp.attempts += 1;
+      await signupOtp.save({ validateBeforeSave: false });
+      throw AppError.badRequest('Invalid OTP');
+    }
+
     // Create user
     const user = await User.create({
       email: normalizedEmail,
       password: userData.password,
       firstName: userData.firstName,
       lastName: userData.lastName,
-      phone: userData.phone,
+      phone: normalizedPhone,
       aadhaarNumber: userData.aadhaarNumber,
       panCardNumber: normalizedPanCard,
       dateOfBirth: userData.dateOfBirth,
     });
+
+    await SignupOtp.deleteOne({ _id: signupOtp._id });
 
     // Generate tokens
     const accessToken = this.generateAccessToken(user._id);

@@ -1,5 +1,6 @@
 const {
   validate,
+  requestSignupOtpValidation,
   registerValidation,
   loginValidation,
   forgotPasswordValidation,
@@ -10,6 +11,7 @@ const {
 
 module.exports = {
   validate,
+  requestSignupOtpValidation,
   registerValidation,
   loginValidation,
   forgotPasswordValidation,

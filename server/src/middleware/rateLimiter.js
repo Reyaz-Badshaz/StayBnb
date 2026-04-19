@@ -1,5 +1,8 @@
 const rateLimit = require('express-rate-limit');
 const { AppError } = require('../utils');
+const config = require('../config');
+
+const skipInTest = () => config.nodeEnv === 'test';
 
 /**
  * General API rate limiter
@@ -14,6 +17,7 @@ const apiLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  skip: skipInTest,
   handler: (req, res, next, options) => {
     throw AppError.tooManyRequests(options.message.message);
   },
@@ -32,6 +36,7 @@ const authLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  skip: skipInTest,
   skipSuccessfulRequests: true, // Don't count successful logins
   handler: (req, res, next, options) => {
     throw AppError.tooManyRequests(options.message.message);
@@ -51,6 +56,7 @@ const passwordResetLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  skip: skipInTest,
   handler: (req, res, next, options) => {
     throw AppError.tooManyRequests(options.message.message);
   },
@@ -69,6 +75,7 @@ const searchLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  skip: skipInTest,
   handler: (req, res, next, options) => {
     throw AppError.tooManyRequests(options.message.message);
   },
@@ -87,6 +94,7 @@ const uploadLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  skip: skipInTest,
   handler: (req, res, next, options) => {
     throw AppError.tooManyRequests(options.message.message);
   },
@@ -105,6 +113,7 @@ const bookingLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  skip: skipInTest,
   handler: (req, res, next, options) => {
     throw AppError.tooManyRequests(options.message.message);
   },

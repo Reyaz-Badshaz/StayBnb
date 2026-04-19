@@ -6,6 +6,7 @@ const { Conversation, Message } = require('./Message');
 const Notification = require('./Notification');
 const Experience = require('./Experience');
 const ExperienceBooking = require('./ExperienceBooking');
+const SignupOtp = require('./SignupOtp');
 
 module.exports = {
   User,
@@ -17,4 +18,5 @@ module.exports = {
   Notification,
   Experience,
   ExperienceBooking,
+  SignupOtp,
 };

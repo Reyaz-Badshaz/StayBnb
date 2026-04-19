@@ -4,12 +4,15 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useForm } from 'react-hook-form';
 import { Eye, EyeOff, Home, Loader2, Check, X } from 'lucide-react';
 import { register as registerUser, socialLogin, clearError } from '../../features/auth/authSlice';
+import { authService as authApiService } from '../../services';
 import oauthService from '../../services/oauthService';
 import toast from 'react-hot-toast';
 
 const RegisterPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [socialLoading, setSocialLoading] = useState(null);
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [otpRequested, setOtpRequested] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { isLoading, error } = useSelector((state) => state.auth);
@@ -22,6 +25,9 @@ const RegisterPage = () => {
   } = useForm();
 
   const password = watch('password', '');
+  const watchedEmail = watch('email', '');
+  const watchedPhone = watch('phone', '');
+  const watchedFirstName = watch('firstName', '');
 
   const passwordRequirements = [
     { label: 'At least 8 characters', met: password.length >= 8 },
@@ -103,6 +109,11 @@ const RegisterPage = () => {
   };
 
   const onSubmit = async (data) => {
+    if (!data.signupOtp) {
+      toast.error('Please enter OTP to complete sign up');
+      return;
+    }
+
     dispatch(clearError());
     const result = await dispatch(registerUser(data));
     if (registerUser.fulfilled.match(result)) {
@@ -110,6 +121,32 @@ const RegisterPage = () => {
       navigate('/');
     } else {
       toast.error(result.payload || 'Registration failed');
+    }
+  };
+
+  const handleSendOtp = async () => {
+    if (!watchedEmail || !watchedPhone) {
+      toast.error('Enter your email and phone number first');
+      return;
+    }
+
+    setOtpLoading(true);
+    try {
+      const response = await authApiService.requestSignupOtp({
+        email: watchedEmail,
+        phone: watchedPhone,
+        firstName: watchedFirstName,
+      });
+
+      setOtpRequested(true);
+      toast.success(response?.message || 'OTP sent to your email');
+      if (response?.data?.otp) {
+        toast.success(`Dev OTP: ${response.data.otp}`);
+      }
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to send OTP');
+    } finally {
+      setOtpLoading(false);
     }
   };
 
@@ -215,6 +252,44 @@ const RegisterPage = () => {
               {errors.phone && (
                 <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>
               )}
+            </div>
+
+            {/* Sign-up OTP */}
+            <div>
+              <label htmlFor="signupOtp" className="block text-sm font-medium text-gray-700 mb-1">
+                OTP verification
+              </label>
+              <div className="flex gap-2">
+                <input
+                  id="signupOtp"
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={6}
+                  {...register('signupOtp', {
+                    required: 'OTP is required',
+                    pattern: {
+                      value: /^\d{6}$/,
+                      message: 'Enter a valid 6-digit OTP',
+                    },
+                  })}
+                  className="input-field flex-1"
+                  placeholder="Enter 6-digit OTP"
+                />
+                <button
+                  type="button"
+                  onClick={handleSendOtp}
+                  disabled={otpLoading}
+                  className="px-4 py-2 rounded-lg border border-gray-300 text-sm font-medium hover:bg-gray-50 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {otpLoading ? 'Sending...' : otpRequested ? 'Resend OTP' : 'Send OTP'}
+                </button>
+              </div>
+              {errors.signupOtp && (
+                <p className="mt-1 text-sm text-red-600">{errors.signupOtp.message}</p>
+              )}
+              <p className="mt-1 text-xs text-gray-500">
+                We send an OTP to your email for signup verification.
+              </p>
             </div>
 
             {/* Aadhaar Number */}

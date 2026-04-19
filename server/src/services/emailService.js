@@ -153,6 +153,22 @@ const templates = {
     `,
   }),
 
+  signupOtp: (data) => ({
+    subject: 'Your StayBnB sign-up OTP',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h1 style="color: #FF5A5F;">Verify your sign-up</h1>
+        <p>Hi ${data.name},</p>
+        <p>Use the OTP below to complete your StayBnB account registration:</p>
+        <div style="margin: 24px 0; padding: 16px; border-radius: 8px; background: #f7f7f7; text-align: center;">
+          <span style="font-size: 30px; letter-spacing: 6px; font-weight: bold;">${data.otp}</span>
+        </div>
+        <p style="color: #666;">This OTP expires in ${data.expiresInMinutes} minutes.</p>
+        <p style="color: #666;">If you did not request this, you can safely ignore this email.</p>
+      </div>
+    `,
+  }),
+
   payoutSent: (data) => ({
     subject: `Payout Sent - $${data.amount}`,
     html: `
@@ -319,6 +335,19 @@ const sendVerificationEmail = async (user, token) => {
 };
 
 /**
+ * Send sign-up OTP email
+ */
+const sendSignupOtpEmail = async (email, name, otp, expiresInMinutes = 10) => {
+  const data = {
+    name: name || 'there',
+    otp,
+    expiresInMinutes,
+  };
+
+  return sendEmail(email, 'signupOtp', data);
+};
+
+/**
  * Send payout notification
  */
 const sendPayoutNotification = async (host, payout) => {
@@ -340,5 +369,6 @@ module.exports = {
   sendReviewReminder,
   sendPasswordResetEmail,
   sendVerificationEmail,
+  sendSignupOtpEmail,
   sendPayoutNotification,
 };
