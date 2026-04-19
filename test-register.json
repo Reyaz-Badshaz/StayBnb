@@ -1,0 +1,8 @@
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john.doe@test.com",
+  "password": "SecurePass123!",
+  "confirmPassword": "SecurePass123!",
+  "dateOfBirth": "1995-05-15"
+}

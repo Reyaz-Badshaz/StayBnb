@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+/* Custom CSS Variables for StayBnB Brand */
+:root {
+  --primary: #FF385C;
+  --primary-dark: #E31C5F;
+  --secondary: #00A699;
+  --dark: #222222;
+  --gray-dark: #484848;
+  --gray: #767676;
+  --gray-light: #EBEBEB;
+  --background: #FFFFFF;
+  --success: #008A05;
+  --warning: #FFB400;
+  --error: #C13515;
+}
+
+/* Base Styles */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Circular', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: var(--dark);
+  background: var(--background);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Airbnb-style Button */
+.btn-primary {
+  @apply px-6 py-3 bg-[#FF385C] hover:bg-[#E31C5F] text-white font-semibold rounded-lg transition-colors duration-200;
+}
+
+.btn-secondary {
+  @apply px-6 py-3 border border-gray-900 hover:bg-gray-100 text-gray-900 font-semibold rounded-lg transition-colors duration-200;
+}
+
+/* Card Styles */
+.card {
+  @apply bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200;
+}
+
+/* Input Styles */
+.input-field {
+  @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF385C] focus:border-transparent transition-all duration-200;
+}
+
+/* Hide scrollbar but keep functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.45s ease-out both;
+}
